@@ -6,6 +6,7 @@ import asyncio
 
 import bcrypt
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
 from app.database import AsyncSessionLocal, engine
 from app.models import AdminUser, Pet, User
@@ -34,7 +35,11 @@ async def ensure_admin() -> bool:
             password_hash=hash_password("admin123"),
         )
         session.add(admin)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            return False
         return True
 
 
@@ -107,4 +112,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
