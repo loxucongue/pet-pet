@@ -3,18 +3,28 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db_session
 from app.models import User
-from app.schemas.record import RecordCreate, RecordListResponse, RecordResponse, RecordUpdate
+from app.schemas.record import (
+    ExpenseStatsResponse,
+    RecordCreate,
+    RecordListResponse,
+    RecordResponse,
+    RecordUpdate,
+    WeightTrendPoint,
+)
 from app.services.record_service import (
     create_record,
     delete_record,
+    get_expense_stats,
     get_record_by_id,
     get_records,
+    get_weight_trend,
     update_record,
 )
 from app.utils.deps import get_current_user
@@ -64,6 +74,31 @@ async def list_records_route(
         items=[RecordResponse.model_validate(record) for record in records],
         total=len(records),
     )
+
+
+@router.get("/stats/weight", response_model=list[WeightTrendPoint], summary="获取体重趋势")
+async def get_weight_trend_route(
+    pet_id: int = Query(...),
+    period: Literal["1m", "3m", "6m", "1y", "all"] = Query(default="1m"),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> list[WeightTrendPoint]:
+    """按周期获取指定宠物的体重趋势数据。"""
+
+    return await get_weight_trend(session, pet_id, current_user.id, period)
+
+
+@router.get("/stats/expense", response_model=ExpenseStatsResponse, summary="获取消费统计")
+async def get_expense_stats_route(
+    pet_id: int = Query(...),
+    year: int = Query(..., ge=2000, le=2100),
+    month: int | None = Query(default=None, ge=1, le=12),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> ExpenseStatsResponse:
+    """按月或按年获取指定宠物的消费统计。"""
+
+    return await get_expense_stats(session, pet_id, current_user.id, year, month)
 
 
 @router.get("/{record_id}", response_model=RecordResponse, summary="获取记录详情")

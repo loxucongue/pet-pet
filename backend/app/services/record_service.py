@@ -6,12 +6,18 @@ from datetime import date
 from typing import Sequence
 
 from fastapi import HTTPException, status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models import Pet, PetRecord, RecordImage, Reminder
-from app.schemas.record import RecordCreate, RecordUpdate
+from app.schemas.record import (
+    ExpenseStatDetail,
+    ExpenseStatsResponse,
+    RecordCreate,
+    RecordUpdate,
+    WeightTrendPoint,
+)
 from app.services.pet_service import get_pet_by_id
 
 
@@ -23,6 +29,9 @@ UPDATABLE_FIELDS = {
     "amount",
     "weight_value",
 }
+
+WEIGHT_RECORD_SUB_TYPE = "体重记录"
+EXPENSE_CATEGORY = "消费"
 
 
 def _get_record_query() -> select[tuple[PetRecord]]:
@@ -78,9 +87,45 @@ async def _sync_pet_weight(
 ) -> None:
     """当记录为体重记录时，同步宠物当前体重。"""
 
-    if sub_type == "体重记录" and weight_value is not None:
+    if sub_type == WEIGHT_RECORD_SUB_TYPE and weight_value is not None:
         pet.weight = weight_value
         await session.flush()
+
+
+def _shift_months(base_date: date, months: int) -> date:
+    """将日期按月偏移，保留可用的日字段。"""
+
+    total_month = (base_date.year * 12 + (base_date.month - 1)) + months
+    target_year = total_month // 12
+    target_month = total_month % 12 + 1
+
+    if target_month == 12:
+        next_month_year = target_year + 1
+        next_month = 1
+    else:
+        next_month_year = target_year
+        next_month = target_month + 1
+
+    month_last_day = (date(next_month_year, next_month, 1) - date.resolution).day
+    target_day = min(base_date.day, month_last_day)
+    return date(target_year, target_month, target_day)
+
+
+def _resolve_period_start(period: str) -> date | None:
+    """根据周期字符串解析起始日期。"""
+
+    today = date.today()
+    period_mapping = {
+        "1m": -1,
+        "3m": -3,
+        "6m": -6,
+        "1y": -12,
+        "all": None,
+    }
+    months = period_mapping[period]
+    if months is None:
+        return None
+    return _shift_months(today, months)
 
 
 async def create_record(
@@ -155,6 +200,75 @@ async def get_record_by_id(
     """获取单条记录详情。"""
 
     return await _ensure_record_access(session, record_id, user_id)
+
+
+async def get_weight_trend(
+    session: AsyncSession,
+    pet_id: int,
+    user_id: int,
+    period: str,
+) -> list[WeightTrendPoint]:
+    """获取指定周期内的体重趋势数据。"""
+
+    await get_pet_by_id(session, pet_id, user_id)
+
+    query = (
+        select(PetRecord.record_date, PetRecord.weight_value)
+        .where(
+            PetRecord.pet_id == pet_id,
+            PetRecord.sub_type == WEIGHT_RECORD_SUB_TYPE,
+            PetRecord.weight_value.is_not(None),
+        )
+        .order_by(PetRecord.record_date.asc(), PetRecord.id.asc())
+    )
+
+    start_date = _resolve_period_start(period)
+    if start_date is not None:
+        query = query.where(PetRecord.record_date >= start_date)
+
+    rows = (await session.execute(query)).all()
+    return [
+        WeightTrendPoint(date=row.record_date, weight=row.weight_value)
+        for row in rows
+    ]
+
+
+async def get_expense_stats(
+    session: AsyncSession,
+    pet_id: int,
+    user_id: int,
+    year: int,
+    month: int | None = None,
+) -> ExpenseStatsResponse:
+    """获取月度或年度消费统计。"""
+
+    await get_pet_by_id(session, pet_id, user_id)
+
+    query = (
+        select(
+            PetRecord.sub_type,
+            func.coalesce(func.sum(PetRecord.amount), 0.0).label("amount"),
+        )
+        .where(
+            PetRecord.pet_id == pet_id,
+            PetRecord.category == EXPENSE_CATEGORY,
+            PetRecord.amount.is_not(None),
+            func.extract("year", PetRecord.record_date) == year,
+        )
+        .group_by(PetRecord.sub_type)
+        .order_by(func.coalesce(func.sum(PetRecord.amount), 0.0).desc(), PetRecord.sub_type.asc())
+    )
+
+    if month is not None:
+        query = query.where(func.extract("month", PetRecord.record_date) == month)
+
+    rows = (await session.execute(query)).all()
+    details = [
+        ExpenseStatDetail(sub_type=row.sub_type, amount=float(row.amount or 0.0))
+        for row in rows
+    ]
+    total = float(sum(item.amount for item in details))
+    return ExpenseStatsResponse(total=total, details=details)
 
 
 async def update_record(

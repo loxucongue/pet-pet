@@ -128,3 +128,24 @@ class RecordListResponse(BaseModel):
 
     items: list[RecordResponse]
     total: int
+
+
+class WeightTrendPoint(BaseModel):
+    """体重趋势数据点。"""
+
+    date: date
+    weight: float
+
+
+class ExpenseStatDetail(BaseModel):
+    """消费分类汇总明细。"""
+
+    sub_type: str
+    amount: float
+
+
+class ExpenseStatsResponse(BaseModel):
+    """消费统计响应模型。"""
+
+    total: float
+    details: list[ExpenseStatDetail]
