@@ -10,14 +10,6 @@
     "usingComponents": true
   },
   "h5": {
-    "title": "pppet",
-    "devServer": {
-      "proxy": {
-        "/api": {
-          "target": "http://localhost:8000",
-          "changeOrigin": true
-        }
-      }
-    }
+    "title": "pppet"
   }
 }
