@@ -4,7 +4,27 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
+
+
+def _normalize_required_text(value: str) -> str:
+    """标准化必填文本字段并校验非空。"""
+
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError("字段不能为空字符串。")
+    return normalized
+
+
+def _normalize_optional_text(value: str | None) -> str | None:
+    """标准化可选文本字段。"""
+
+    if value is None:
+        return None
+    normalized = value.strip()
+    if not normalized:
+        raise ValueError("字段不能为空字符串。")
+    return normalized
 
 
 class PetBase(BaseModel):
@@ -24,6 +44,13 @@ class PetBase(BaseModel):
     allergy_history: str | None = None
     chronic_disease: str | None = None
     current_food_brand: str | None = None
+
+    @field_validator("nickname", "species", "breed")
+    @classmethod
+    def validate_required_text(cls, value: str) -> str:
+        """校验创建时必填文本字段。"""
+
+        return _normalize_required_text(value)
 
 
 class PetCreate(PetBase):
@@ -50,6 +77,24 @@ class PetUpdate(BaseModel):
     is_deleted: bool | None = None
     deleted_at: datetime | None = None
 
+    @field_validator(
+        "avatar",
+        "nickname",
+        "species",
+        "breed",
+        "gender",
+        "approximate_age",
+        "fur_color",
+        "allergy_history",
+        "chronic_disease",
+        "current_food_brand",
+    )
+    @classmethod
+    def validate_optional_text(cls, value: str | None) -> str | None:
+        """校验更新时文本字段。"""
+
+        return _normalize_optional_text(value)
+
 
 class PetResponse(PetBase):
     """宠物响应模型。"""
@@ -69,4 +114,3 @@ class PetListResponse(BaseModel):
 
     items: list[PetResponse]
     total: int
-
