@@ -67,6 +67,18 @@
       }
     },
     {
+      "path": "pages/ai/chat",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/ai/chat-history",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/community/index",
       "style": {
         "navigationBarTitleText": "社区"

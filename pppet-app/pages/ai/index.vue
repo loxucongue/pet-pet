@@ -1,33 +1,23 @@
 <script setup>
-/** AI 主页面。 */
+/** AI 模块主页。 */
 import { computed, ref } from "vue";
 import { onShow } from "@dcloudio/uni-app";
 
 import EmptyState from "@/components/EmptyState.vue";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
+import { getChatPermissions } from "@/api/chat.js";
 import { getHealthQuota, getHealthReportList } from "@/api/health.js";
 import { getPetList } from "@/api/pet.js";
 import { formatDisplayDate } from "@/utils/date.js";
-import { getUserInfo } from "@/utils/storage.js";
 import { resolveFileUrl } from "@/utils/request.js";
 
 const loading = ref(false);
 const petList = ref([]);
 const recentReports = ref([]);
 const quotaRemaining = ref(0);
-const userInfo = ref(null);
-
-const isVipUser = computed(() => {
-  if (!userInfo.value || userInfo.value.user_type !== "vip") {
-    return false;
-  }
-
-  if (!userInfo.value.vip_expire_time) {
-    return true;
-  }
-
-  return new Date(userInfo.value.vip_expire_time).getTime() > Date.now();
-});
+const chatPermissionList = ref([]);
+const maxChatPets = ref(1);
+const usedChatPets = ref(0);
 
 const reportCards = computed(() =>
   recentReports.value.slice(0, 3).map((report) => {
@@ -50,12 +40,18 @@ const reportCards = computed(() =>
 );
 
 const advisorCards = computed(() =>
-  petList.value.map((pet, index) => ({
-    ...pet,
-    locked: !isVipUser.value && index > 0,
-    avatarUrl: resolveFileUrl(pet.avatar),
+  chatPermissionList.value.map((item) => ({
+    ...item,
+    avatarUrl: resolveFileUrl(item.pet_avatar),
   })),
 );
+
+const advisorMetaText = computed(() => {
+  if (maxChatPets.value > 1) {
+    return `已解锁 ${usedChatPets.value}/${maxChatPets.value} 只宠物`;
+  }
+  return "普通用户最多 1 只";
+});
 
 function normalizeIndicators(value) {
   if (Array.isArray(value)) {
@@ -105,21 +101,26 @@ function getReportStatusMeta(status) {
 async function fetchAiHomeData() {
   loading.value = true;
   try {
-    userInfo.value = getUserInfo();
-
-    const [petResponse, quotaResponse, reportResponse] = await Promise.all([
+    const [petResponse, quotaResponse, reportResponse, permissionResponse] = await Promise.all([
       getPetList(undefined, { showLoading: false }),
       getHealthQuota({ showLoading: false }),
       getHealthReportList(undefined, { showLoading: false }),
+      getChatPermissions({ showLoading: false }),
     ]);
 
     petList.value = petResponse?.items || [];
     quotaRemaining.value = Number(quotaResponse?.remaining || 0);
     recentReports.value = reportResponse?.items || [];
+    chatPermissionList.value = permissionResponse?.items || [];
+    maxChatPets.value = Number(permissionResponse?.max_chat_pets || 1);
+    usedChatPets.value = Number(permissionResponse?.used_chat_pets || 0);
   } catch (error) {
     petList.value = [];
     recentReports.value = [];
     quotaRemaining.value = 0;
+    chatPermissionList.value = [];
+    maxChatPets.value = 1;
+    usedChatPets.value = 0;
   } finally {
     loading.value = false;
   }
@@ -140,7 +141,7 @@ function openUploadPage(petId = "") {
   });
 }
 
-function openHistoryPage() {
+function openAnalysisHistoryPage() {
   uni.navigateTo({
     url: "/pages/ai/report-history",
   });
@@ -153,10 +154,12 @@ function openReportDetail(reportId) {
 }
 
 function handleAdvisorClick(card) {
-  if (card.locked) {
+  if (card.is_locked) {
     uni.showModal({
-      title: "开通会员",
-      content: "普通用户可先体验 1 个 AI 宠物顾问入口，开通会员后可解锁更多宠物专属顾问。",
+      title: "暂未解锁",
+      content:
+        card.lock_reason ||
+        "当前账号可用的 AI 宠物顾问入口已满，开通会员或释放已有宠物入口后可继续使用。",
       confirmText: "我知道了",
       showCancel: false,
       confirmColor: "#FF8BA7",
@@ -164,9 +167,8 @@ function handleAdvisorClick(card) {
     return;
   }
 
-  uni.showToast({
-    title: `${card.nickname} 的 AI 顾问对话即将开放`,
-    icon: "none",
+  uni.navigateTo({
+    url: `/pages/ai/chat?petId=${card.pet_id}`,
   });
 }
 
@@ -191,7 +193,7 @@ onShow(() => {
           <view class="ai-page__hero-copy">
             <text class="section-title">AI 健康助手</text>
             <text class="section-caption">
-              上传体检报告做通俗化解读，也可以逐步为每只宠物解锁专属 AI 顾问入口。
+              先做体检报告解读，再进入宠物专属顾问继续追问，医疗信息和陪伴感都集中在这里。
             </text>
           </view>
           <view class="tag-soft">剩余 {{ quotaRemaining }} 次</view>
@@ -199,9 +201,9 @@ onShow(() => {
 
         <view class="card ai-page__analysis-card">
           <view class="ai-page__analysis-top">
-            <view>
+            <view class="ai-page__section-copy">
               <text class="ai-page__section-title">体检报告分析</text>
-              <text class="section-caption">上传图片或 PDF，自动完成 OCR 识别和 AI 解读。</text>
+              <text class="section-caption">上传图片或 PDF，自动完成 OCR 识别和 AI 通俗解读。</text>
             </view>
             <view
               class="ai-page__quota-pill"
@@ -219,7 +221,9 @@ onShow(() => {
             >
               上传新报告
             </view>
-            <view class="btn-secondary ai-page__cta-btn" @click="openHistoryPage">查看历史</view>
+            <view class="btn-secondary ai-page__cta-btn" @click="openAnalysisHistoryPage">
+              查看历史
+            </view>
           </view>
 
           <view v-if="reportCards.length" class="ai-page__report-list">
@@ -247,7 +251,9 @@ onShow(() => {
                     {{ report.statusMeta.text }}
                   </view>
                 </view>
-                <text class="ai-page__report-date">{{ formatDisplayDate(String(report.created_at).slice(0, 10)) }}</text>
+                <text class="ai-page__report-date">
+                  {{ formatDisplayDate(String(report.created_at).slice(0, 10)) }}
+                </text>
                 <text class="ai-page__report-summary">{{ report.summary }}</text>
               </view>
             </view>
@@ -263,19 +269,21 @@ onShow(() => {
 
         <view class="card">
           <view class="ai-page__section-head">
-            <view>
+            <view class="ai-page__section-copy">
               <text class="ai-page__section-title">AI 宠物顾问</text>
-              <text class="section-caption">按宠物进入专属问答入口，后续会结合健康档案持续回答。</text>
+              <text class="section-caption">
+                每只宠物都有自己的历史对话，问答时会结合档案信息和近期健康记录。
+              </text>
             </view>
-            <view class="tag-soft">{{ isVipUser ? "会员已解锁全部" : "普通用户体验 1 只" }}</view>
+            <view class="tag-soft">{{ advisorMetaText }}</view>
           </view>
 
           <view v-if="advisorCards.length" class="ai-page__advisor-list">
             <view
               v-for="card in advisorCards"
-              :key="card.id"
+              :key="card.pet_id"
               class="ai-page__advisor-card"
-              :class="{ 'ai-page__advisor-card--locked': card.locked }"
+              :class="{ 'ai-page__advisor-card--locked': card.is_locked }"
               @click="handleAdvisorClick(card)"
             >
               <view class="ai-page__advisor-avatar">
@@ -284,14 +292,18 @@ onShow(() => {
               </view>
               <view class="ai-page__advisor-copy">
                 <view class="ai-page__advisor-head">
-                  <text class="ai-page__advisor-name">{{ card.nickname }}</text>
-                  <view v-if="card.locked" class="ai-page__advisor-lock">锁定</view>
+                  <text class="ai-page__advisor-name">{{ card.pet_nickname }}</text>
+                  <view v-if="card.is_locked" class="ai-page__advisor-lock">锁定</view>
                 </view>
-                <text class="section-caption">
-                  {{ card.species }} · {{ card.breed }}
-                </text>
+                <text class="section-caption">{{ card.species }} · {{ card.breed }}</text>
                 <text class="ai-page__advisor-desc">
-                  {{ card.locked ? "开通会员后可解锁该宠物顾问对话" : "进入专属 AI 顾问入口，询问日常健康与护理问题" }}
+                  {{
+                    card.is_locked
+                      ? card.lock_reason || "当前宠物顾问入口暂未解锁"
+                      : card.has_session
+                        ? "进入这只宠物的专属顾问对话，继续最近的问题。"
+                        : "进入专属 AI 顾问入口，开始新的健康咨询。"
+                  }}
                 </text>
               </view>
             </view>
@@ -299,7 +311,7 @@ onShow(() => {
           <EmptyState
             v-else
             icon="🐱"
-            text="先添加宠物档案，AI 才能按宠物建立分析历史和顾问入口。"
+            text="先添加宠物档案，AI 才能按宠物建立历史记录和顾问入口。"
             button-text="添加宠物"
             @action="openAddPetPage"
           />
@@ -323,24 +335,7 @@ onShow(() => {
   padding-bottom: 56rpx;
 }
 
-.ai-page__hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-}
-
-.ai-page__hero-copy {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.ai-page__analysis-card {
-  background: linear-gradient(180deg, rgba(255, 251, 252, 0.98) 0%, rgba(247, 251, 255, 0.98) 100%);
-}
-
+.ai-page__hero,
 .ai-page__analysis-top,
 .ai-page__section-head,
 .ai-page__report-head,
@@ -349,6 +344,25 @@ onShow(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
+}
+
+.ai-page__hero {
+  align-items: flex-start;
+}
+
+.ai-page__hero-copy,
+.ai-page__section-copy,
+.ai-page__report-main,
+.ai-page__advisor-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.ai-page__analysis-card {
+  background: linear-gradient(180deg, rgba(255, 251, 252, 0.98) 0%, rgba(247, 251, 255, 0.98) 100%);
 }
 
 .ai-page__section-title,
@@ -405,7 +419,7 @@ onShow(() => {
   gap: 18rpx;
   padding: 22rpx;
   border-radius: 24rpx;
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.84);
 }
 
 .ai-page__report-cover,
@@ -427,15 +441,6 @@ onShow(() => {
 .ai-page__advisor-avatar image {
   width: 100%;
   height: 100%;
-}
-
-.ai-page__report-main,
-.ai-page__advisor-copy {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  gap: 8rpx;
 }
 
 .ai-page__report-date {
