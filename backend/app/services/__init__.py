@@ -19,7 +19,7 @@ from app.services.deepseek_service import (
     DeepSeekServiceError,
     DeepSeekTimeoutError,
 )
-from app.services.quota_service import AnalysisQuotaExceededError
+from app.services.quota_service import AnalysisQuotaExceededError, ChatQuotaExceededError
 
 __all__ = [
     "CozeOCRConfigurationError",
@@ -38,4 +38,5 @@ __all__ = [
     "DeepSeekServiceError",
     "DeepSeekTimeoutError",
     "AnalysisQuotaExceededError",
+    "ChatQuotaExceededError",
 ]

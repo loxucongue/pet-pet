@@ -2,18 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Feedback, User, UserDailyQuota
+from app.models import Feedback, User
 from app.schemas.feedback import FeedbackCreate
 from app.schemas.user import UserProfileUpdate
-from app.services.quota_service import get_analysis_remaining, is_vip_active
-
-
-NORMAL_CHAT_DAILY_LIMIT = 10
+from app.services.quota_service import get_analysis_remaining, get_chat_remaining, is_vip_active
 
 
 async def get_user_profile(session: AsyncSession, user_id: int) -> User:
@@ -46,23 +40,11 @@ async def get_user_quota_summary(session: AsyncSession, user_id: int) -> dict[st
     """获取用户额度汇总。"""
 
     user = await get_user_profile(session, user_id)
-    now_utc = datetime.now(timezone.utc)
     vip_active = is_vip_active(user)
 
     effective_user_type = "vip" if vip_active else "normal"
     ai_analysis_remaining = await get_analysis_remaining(session, user)
-
-    if vip_active:
-        chat_daily_remaining: int | None = None
-    else:
-        quota = await session.scalar(
-            select(UserDailyQuota).where(
-                UserDailyQuota.user_id == user_id,
-                UserDailyQuota.quota_date == now_utc.date(),
-            )
-        )
-        chat_used = quota.chat_count if quota is not None else 0
-        chat_daily_remaining = max(NORMAL_CHAT_DAILY_LIMIT - chat_used, 0)
+    chat_daily_remaining = await get_chat_remaining(session, user)
 
     return {
         "ai_analysis_remaining": ai_analysis_remaining,
