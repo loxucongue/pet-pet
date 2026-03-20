@@ -27,9 +27,10 @@ class UserUpdate(BaseModel):
 
     nickname: str | None = None
     avatar_url: str | None = None
-    user_type: str | None = None
-    vip_expire_time: datetime | None = None
-    ai_analysis_used_count: int | None = None
+
+
+class UserProfileUpdate(UserUpdate):
+    """用户资料更新请求模型。"""
 
 
 class UserResponse(UserBase):
@@ -41,3 +42,11 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: datetime
 
+
+class UserQuotaSummary(BaseModel):
+    """用户额度汇总响应模型。"""
+
+    ai_analysis_remaining: int
+    chat_daily_remaining: int | None
+    user_type: str
+    vip_expire_time: datetime | None = None

@@ -10,7 +10,6 @@ from pydantic import BaseModel, ConfigDict
 class FeedbackCreate(BaseModel):
     """创建反馈请求模型。"""
 
-    user_id: int
     type: str
     content: str
     contact: str | None = None
