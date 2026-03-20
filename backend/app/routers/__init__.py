@@ -8,12 +8,14 @@ from app.routers.health import router as health_router
 from app.routers.pets import router as pets_router
 from app.routers.records import router as records_router
 from app.routers.reminders import router as reminders_router
+from app.routers.upload import router as upload_router
 from app.routers.user import router as user_router
 
 
 all_routers = (
     auth_router,
     pets_router,
+    upload_router,
     records_router,
     reminders_router,
     health_router,
@@ -24,4 +26,3 @@ all_routers = (
 )
 
 __all__ = ["all_routers"]
-

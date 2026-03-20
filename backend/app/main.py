@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.routers import all_routers
+
+
+UPLOADS_DIR = Path(__file__).resolve().parents[1] / "uploads"
 
 
 app = FastAPI(
@@ -24,6 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory=UPLOADS_DIR), name="static")
+
 for router in all_routers:
     app.include_router(router)
 
@@ -40,4 +48,3 @@ async def healthcheck() -> dict[str, str]:
     """返回服务健康检查结果。"""
 
     return {"status": "ok"}
-
