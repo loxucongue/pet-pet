@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Consultation"
+  short_description: "Create a coherent product design system"
+  default_prompt: "Use $design-consultation to propose a design system and write DESIGN.md for this product."

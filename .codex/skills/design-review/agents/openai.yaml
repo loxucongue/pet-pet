@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Review"
+  short_description: "Audit and fix product UI quality"
+  default_prompt: "Use $design-review to audit a live page's UI and fix the highest-impact issues."

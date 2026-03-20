@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PetPet Companion - Design Consultation Preview</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;800&family=ZCOOL+KuaiLe&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --font-display: "ZCOOL KuaiLe", "Noto Sans SC", "PingFang SC", sans-serif;
+        --font-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+        --font-data: "JetBrains Mono", "Noto Sans SC", monospace;
+
+        --bg: #f7f8fa;
+        --bg-soft: #eef1f4;
+        --surface: #ffffff;
+        --text: #2b3440;
+        --text-strong: #141a22;
+        --text-muted: #8a95a6;
+        --border: #d9dee5;
+
+        --primary: #2a9d8f;
+        --secondary: #e76f51;
+        --accent: #e9c46a;
+        --success: #3aa675;
+        --warning: #f4a261;
+        --error: #d9534f;
+        --info: #4c8bf5;
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+
+        --space-2xs: 2px;
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --space-2xl: 48px;
+      }
+
+      :root.dark {
+        --bg: #10151c;
+        --bg-soft: #171e27;
+        --surface: #202a36;
+        --text: #e9edf2;
+        --text-strong: #ffffff;
+        --text-muted: #b8c0cb;
+        --border: #334050;
+
+        --primary: #409f95;
+        --secondary: #d06d55;
+        --accent: #d8b96f;
+        --success: #4ca986;
+        --warning: #d49561;
+        --error: #c4625e;
+        --info: #5d91ea;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-body);
+        color: var(--text);
+        background: radial-gradient(circle at 10% 0%, rgba(42, 157, 143, 0.14), transparent 40%),
+          radial-gradient(circle at 100% 10%, rgba(231, 111, 81, 0.12), transparent 30%),
+          var(--bg);
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: var(--space-xl) var(--space-md) 80px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-md);
+        margin-bottom: var(--space-xl);
+      }
+
+      .pill {
+        padding: 8px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .toggle {
+        border: 1px solid var(--border);
+        border-radius: 9999px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 8px 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .hero {
+        background: linear-gradient(140deg, rgba(42, 157, 143, 0.2), rgba(233, 196, 106, 0.14));
+        border: 1px solid rgba(42, 157, 143, 0.26);
+        border-radius: var(--radius-xl);
+        padding: clamp(24px, 5vw, 56px);
+        margin-bottom: var(--space-xl);
+      }
+
+      .hero h1 {
+        font-family: var(--font-display);
+        margin: 0 0 var(--space-md);
+        color: var(--text-strong);
+        font-size: clamp(34px, 5vw, 58px);
+        line-height: 1.2;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 720px;
+        font-size: clamp(15px, 2vw, 19px);
+      }
+
+      .section {
+        margin-bottom: var(--space-2xl);
+      }
+
+      .section h2 {
+        margin: 0 0 14px;
+        color: var(--text-strong);
+        font-size: clamp(24px, 3.2vw, 34px);
+      }
+
+      .section > p {
+        margin: 0 0 var(--space-lg);
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-md);
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-md);
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-md);
+      }
+
+      .specimen h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+
+      .display-a {
+        font-family: var(--font-display);
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.22;
+        margin: 0 0 8px;
+        color: var(--text-strong);
+      }
+
+      .body-a {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .ui-label {
+        display: inline-block;
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 6px 10px;
+        border-radius: 9999px;
+        background: var(--bg-soft);
+      }
+
+      .data-row {
+        margin-top: 12px;
+        font-family: var(--font-data);
+        font-size: 14px;
+      }
+
+      .swatch {
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+
+      .swatch-color {
+        height: 88px;
+      }
+
+      .swatch-meta {
+        background: var(--surface);
+        padding: 12px;
+        font-size: 13px;
+      }
+
+      .btn-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 11px 16px;
+        font-family: var(--font-body);
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .btn-secondary {
+        background: var(--secondary);
+        color: #fff;
+      }
+
+      .btn-ghost {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .input {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--text);
+        padding: 10px 12px;
+        margin-bottom: 10px;
+      }
+
+      .alert {
+        padding: 10px 12px;
+        border-radius: 10px;
+        color: #fff;
+        font-size: 13px;
+      }
+
+      .ui-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .mockup {
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .mockup-head {
+        background: linear-gradient(120deg, rgba(42, 157, 143, 0.2), rgba(231, 111, 81, 0.14));
+        padding: 14px 16px;
+        font-weight: 700;
+      }
+
+      .mockup-body {
+        padding: 14px 16px;
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .stat {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px;
+        background: var(--bg-soft);
+      }
+
+      .stat strong {
+        display: block;
+        font-family: var(--font-data);
+        font-size: 18px;
+        color: var(--text-strong);
+      }
+
+      .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 8px;
+      }
+
+      .list li {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        background: var(--surface);
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-right: 6px;
+      }
+
+      .footer-note {
+        margin-top: var(--space-xl);
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+
+      .reveal {
+        animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 900px) {
+        .grid-2,
+        .grid-3,
+        .ui-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <header class="topbar">
+        <span class="pill">Design Consultation Preview</span>
+        <button
+          id="themeToggle"
+          class="toggle"
+          type="button"
+        >
+          切换深色模式
+        </button>
+      </header>
+
+      <section class="hero reveal">
+        <h1>PetPet Companion</h1>
+        <p>
+          一款给养宠人群的「情感养成 + 数据监控 + AI医疗辅助 + 社区分享」小程序。视觉目标是温暖有陪伴感，同时在健康分析与风险提示场景里足够可信。
+        </p>
+      </section>
+
+      <section class="section reveal">
+        <h2>字体试样</h2>
+        <p>情感场景用有个性的标题字体，正文和数据场景保持高可读性。以下内容全部使用真实产品文案场景。</p>
+        <div class="grid-2">
+          <article class="card specimen">
+            <h3>Display / Hero - ZCOOL KuaiLe</h3>
+            <p class="display-a">今天签到成功，小橘获得新玩具「星际逗猫棒」</p>
+            <p class="body-a">这类标题用于养成反馈、连续打卡奖励、宠物成长里程碑，情绪感染力强。</p>
+            <span class="ui-label">成长事件卡片标题</span>
+            <p class="data-row">STREAK: 014 DAYS | PROP-RARITY: SSR</p>
+          </article>
+          <article class="card specimen">
+            <h3>Body + UI - Noto Sans SC / Data - JetBrains Mono</h3>
+            <p class="body-a">
+              近7日体重趋势稳定（+0.08kg），驱虫到期提醒将在3天后触发。建议本周减少零食摄入并保持每日饮水记录。
+            </p>
+            <span class="ui-label">AI报告摘要</span>
+            <p class="data-row">WEIGHT: 4.32kg | LAST_DEWORM: 2026-03-01 | NEXT: 2026-04-01</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section reveal">
+        <h2>配色系统</h2>
+        <p>主色强调行动和进度，副色强调奖励和情绪反馈，医疗风险采用标准语义色避免误读。</p>
+        <div class="grid-3">
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#2A9D8F"
+            ></div>
+            <div class="swatch-meta">Primary Mint Teal<br />#2A9D8F</div>
+          </div>
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#E76F51"
+            ></div>
+            <div class="swatch-meta">Secondary Warm Coral<br />#E76F51</div>
+          </div>
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#E9C46A"
+            ></div>
+            <div class="swatch-meta">Sunlight Gold<br />#E9C46A</div>
+          </div>
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#3AA675"
+            ></div>
+            <div class="swatch-meta">Success<br />#3AA675</div>
+          </div>
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#F4A261"
+            ></div>
+            <div class="swatch-meta">Warning<br />#F4A261</div>
+          </div>
+          <div class="swatch">
+            <div
+              class="swatch-color"
+              style="background:#D9534F"
+            ></div>
+            <div class="swatch-meta">Error<br />#D9534F</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section reveal">
+        <h2>组件样例</h2>
+        <p>按钮、输入、反馈信息和卡片都使用同一套 token，确保落地时风格统一。</p>
+        <div class="card">
+          <div class="btn-row">
+            <button class="btn btn-primary">今日签到</button>
+            <button class="btn btn-secondary">领取道具</button>
+            <button class="btn btn-ghost">稍后提醒</button>
+          </div>
+          <div class="ui-grid">
+            <div>
+              <input
+                class="input"
+                value="上次驱虫日期：2026-03-01"
+                aria-label="驱虫日期"
+              />
+              <input
+                class="input"
+                value="今日体重：4.32kg"
+                aria-label="体重"
+              />
+              <div
+                class="alert"
+                style="background:var(--info)"
+              >
+                信息：体检报告已同步，可生成AI解释
+              </div>
+            </div>
+            <div>
+              <div
+                class="alert"
+                style="background:var(--success); margin-bottom:8px"
+              >
+                正常：精神状态与饮食记录稳定
+              </div>
+              <div
+                class="alert"
+                style="background:var(--warning); margin-bottom:8px"
+              >
+                提醒：驱虫距离到期还有 3 天
+              </div>
+              <div
+                class="alert"
+                style="background:var(--error)"
+              >
+                关注：咳嗽频次升高，建议尽快线下问诊
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section reveal">
+        <h2>真实页面原型（3个核心模块）</h2>
+        <div class="grid-3">
+          <article class="mockup">
+            <div class="mockup-head">养成空间 · 今日状态</div>
+            <div class="mockup-body">
+              <div class="stat-row">
+                <div class="stat"><strong>14</strong>连续打卡</div>
+                <div class="stat"><strong>27</strong>已解锁道具</div>
+                <div class="stat"><strong>Lv.5</strong>亲密等级</div>
+              </div>
+              <ul class="list">
+                <li>
+                  <span
+                    class="tag"
+                    style="background:rgba(42,157,143,.16); color:var(--primary)"
+                    >签到</span
+                  >
+                  拍照记录「午后玩耍」已完成，获得鱼干 x2
+                </li>
+                <li>
+                  <span
+                    class="tag"
+                    style="background:rgba(233,196,106,.2); color:#8f6f22"
+                    >奖励</span
+                  >
+                  今日任务全达成，可兑换「猫窝皮肤」
+                </li>
+              </ul>
+            </div>
+          </article>
+          <article class="mockup">
+            <div class="mockup-head">健康监控 · AI解读</div>
+            <div class="mockup-body">
+              <ul class="list">
+                <li>
+                  <strong>体重</strong><br />
+                  4.32kg（近7日 +0.08kg，波动正常）
+                </li>
+                <li>
+                  <strong>呼吸道评分</strong><br />
+                  轻微异常，建议观察72小时并减少粉尘刺激
+                </li>
+                <li>
+                  <strong>下一步</strong><br />
+                  若咳嗽加重或伴随食欲下降，请及时就医
+                </li>
+              </ul>
+            </div>
+          </article>
+          <article class="mockup">
+            <div class="mockup-head">论坛社区 · 实用经验</div>
+            <div class="mockup-body">
+              <ul class="list">
+                <li>
+                  <span
+                    class="tag"
+                    style="background:rgba(76,139,245,.18); color:var(--info)"
+                    >生活类</span
+                  >
+                  新手家庭如何做一周喂养排班表
+                </li>
+                <li>
+                  <span
+                    class="tag"
+                    style="background:rgba(42,157,143,.16); color:var(--primary)"
+                    >驯化类</span
+                  >
+                  4周戒抓沙发训练记录（附失败案例）
+                </li>
+                <li>
+                  <span
+                    class="tag"
+                    style="background:rgba(217,83,79,.18); color:var(--error)"
+                    >医疗类</span
+                  >
+                  咳嗽和干呕怎么区分？何时必须立刻就医
+                </li>
+              </ul>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <p class="footer-note">
+        这份预览用于快速确认视觉方向。若你认可方向，下一步可直接把 token 映射到小程序样式变量并实现首批页面。
+      </p>
+    </main>
+
+    <script>
+      const root = document.documentElement;
+      const toggle = document.getElementById("themeToggle");
+      toggle.addEventListener("click", () => {
+        root.classList.toggle("dark");
+      });
+    </script>
+  </body>
+</html>
+
