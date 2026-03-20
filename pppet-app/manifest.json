@@ -1,0 +1,22 @@
+{
+  "name": "pppet-app",
+  "appid": "__UNI__PPP_ET",
+  "description": "pppet uni-app frontend",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "pppet",
+    "devServer": {
+      "proxy": {
+        "/api": {
+          "target": "http://localhost:8000",
+          "changeOrigin": true
+        }
+      }
+    }
+  }
+}

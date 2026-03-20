@@ -1,0 +1,35 @@
+// 主色
+$color-primary: #ff8ba7;
+$color-primary-light: #ffc6d3;
+$color-secondary: #a8d8ea;
+$color-secondary-light: #d4f0f7;
+
+// 背景
+$bg-page: linear-gradient(180deg, #fff5f5 0%, #ffffff 100%);
+$bg-card: #ffffff;
+
+// 文字
+$text-primary: #333333;
+$text-secondary: #888888;
+$text-placeholder: #cccccc;
+
+// 状态色
+$color-success: #7ec699;
+$color-warning: #f5c842;
+$color-danger: #ff6b6b;
+$color-disabled: #d9d9d9;
+
+// 圆角
+$radius-sm: 12rpx;
+$radius-md: 20rpx;
+$radius-lg: 32rpx;
+$radius-full: 50%;
+
+// 投影
+$shadow-card: 0 4rpx 16rpx rgba(255, 139, 167, 0.1);
+
+// 字号
+$font-title: 32rpx;
+$font-body: 28rpx;
+$font-caption: 24rpx;
+$font-mini: 20rpx;
