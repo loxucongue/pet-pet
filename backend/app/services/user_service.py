@@ -10,10 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Feedback, User, UserDailyQuota
 from app.schemas.feedback import FeedbackCreate
 from app.schemas.user import UserProfileUpdate
+from app.services.quota_service import get_analysis_remaining, is_vip_active
 
 
-NORMAL_ANALYSIS_LIMIT = 3
-VIP_ANALYSIS_LIMIT = 10
 NORMAL_CHAT_DAILY_LIMIT = 10
 
 
@@ -48,17 +47,12 @@ async def get_user_quota_summary(session: AsyncSession, user_id: int) -> dict[st
 
     user = await get_user_profile(session, user_id)
     now_utc = datetime.now(timezone.utc)
-    is_vip_active = (
-        user.user_type == "vip"
-        and user.vip_expire_time is not None
-        and user.vip_expire_time.replace(tzinfo=timezone.utc) > now_utc
-    )
+    vip_active = is_vip_active(user)
 
-    effective_user_type = "vip" if is_vip_active else "normal"
-    analysis_limit = VIP_ANALYSIS_LIMIT if is_vip_active else NORMAL_ANALYSIS_LIMIT
-    ai_analysis_remaining = max(analysis_limit - user.ai_analysis_used_count, 0)
+    effective_user_type = "vip" if vip_active else "normal"
+    ai_analysis_remaining = await get_analysis_remaining(session, user)
 
-    if is_vip_active:
+    if vip_active:
         chat_daily_remaining: int | None = None
     else:
         quota = await session.scalar(
@@ -97,4 +91,3 @@ async def create_feedback(
     await session.commit()
     await session.refresh(feedback)
     return feedback
-
