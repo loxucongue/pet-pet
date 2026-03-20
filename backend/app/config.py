@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     deepseek_api_key: str | None = Field(default=None, alias="DEEPSEEK_API_KEY")
     deepseek_base_url: str | None = Field(default=None, alias="DEEPSEEK_BASE_URL")
     coze_api_key: str | None = Field(default=None, alias="COZE_API_KEY")
+    coze_base_url: str = Field(default="https://api.coze.cn", alias="COZE_BASE_URL")
+    coze_oauth_app_id: str | None = Field(default=None, alias="COZE_OAUTH_APP_ID")
+    coze_oauth_kid: str | None = Field(default=None, alias="COZE_OAUTH_KID")
+    coze_private_key_path: str | None = Field(default=None, alias="COZE_PRIVATE_KEY_PATH")
+    coze_oauth_audience: str = Field(default="api.coze.cn", alias="COZE_OAUTH_AUDIENCE")
+    coze_access_token_duration_seconds: int = Field(
+        default=900,
+        alias="COZE_ACCESS_TOKEN_DURATION_SECONDS",
+    )
+    coze_ocr_image_workflow_id: str | None = Field(default=None, alias="COZE_OCR_IMAGE_WORKFLOW_ID")
+    coze_pdf_workflow_id: str | None = Field(default=None, alias="COZE_PDF_WORKFLOW_ID")
     secret_key: str | None = Field(default=None, alias="SECRET_KEY")
 
     cors_allow_origin_regex: str = Field(
