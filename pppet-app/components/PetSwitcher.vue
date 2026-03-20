@@ -1,5 +1,7 @@
 <script setup>
 /** 宠物横向切换栏组件。 */
+import { resolveFileUrl } from "@/utils/request.js";
+
 const props = defineProps({
   petList: {
     type: Array,
@@ -16,6 +18,10 @@ const emit = defineEmits(["change"]);
 function handleChange(petId) {
   emit("change", petId);
 }
+
+function getAvatarUrl(pet) {
+  return resolveFileUrl(pet?.avatar);
+}
 </script>
 
 <template>
@@ -29,7 +35,7 @@ function handleChange(petId) {
           :class="{ 'pet-switcher__item--active': pet.id === props.currentPetId }"
           @click="handleChange(pet.id)"
         >
-          <image v-if="pet.avatar" class="pet-switcher__avatar" :src="pet.avatar" mode="aspectFill" />
+          <image v-if="getAvatarUrl(pet)" class="pet-switcher__avatar" :src="getAvatarUrl(pet)" mode="aspectFill" />
           <view v-else class="pet-switcher__avatar pet-switcher__avatar--fallback">
             <text>{{ pet.emoji || "🐾" }}</text>
           </view>

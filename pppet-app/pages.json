@@ -15,7 +15,31 @@
     {
       "path": "pages/record/index",
       "style": {
-        "navigationBarTitleText": "记录"
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/record/add",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/record/detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/record/weight-trend",
+      "style": {
+        "navigationBarTitleText": "体重趋势"
+      }
+    },
+    {
+      "path": "pages/record/expense-stats",
+      "style": {
+        "navigationBarTitleText": "消费统计"
       }
     },
     {
@@ -53,7 +77,6 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "pppet",
     "navigationBarBackgroundColor": "#FFF5F5",
-    "navigationBarTextStyle": "black",
     "backgroundColor": "#FFF5F5"
   },
   "tabBar": {
