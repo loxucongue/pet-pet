@@ -45,7 +45,25 @@
     {
       "path": "pages/ai/index",
       "style": {
-        "navigationBarTitleText": "AI"
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/ai/upload-report",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/ai/report-detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/ai/report-history",
+      "style": {
+        "navigationStyle": "custom"
       }
     },
     {
